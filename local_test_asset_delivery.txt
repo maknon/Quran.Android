@@ -1,0 +1,7 @@
+# https://developer.android.com/guide/playcore/asset-delivery/test#steps-native-java
+# better to be excuted from Android studio Terminal
+
+$ java -jar bundletool-all.jar build-apks --bundle=app/debug/app-debug.aab   --output=output.apks --local-testing
+
+$ set ANDROID_HOME=C:\Users\Ebrahim\AppData\Local\Android\Sdk
+$ java -jar bundletool-all.jar install-apks --apks=output.apks

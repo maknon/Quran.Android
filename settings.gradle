@@ -1,0 +1,3 @@
+rootProject.name = "Quran"
+include ':app'
+include ':asset_pack_warsh'

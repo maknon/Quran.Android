@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<item
+		android:id="@+id/qiraat"
+		android:title="@string/qiraat"
+		android:orderInCategory="99"
+		android:icon="@drawable/baseline_swap_horiz_24"
+		app:showAsAction="always" />
+	<item
+		android:id="@+id/goTo"
+		android:title="@string/goTo"
+		android:orderInCategory="100"
+		android:icon="@drawable/round_pin_24"
+		app:showAsAction="always" />
+	<item
+		android:id="@+id/darkmode"
+		android:title="@string/darkmode"
+		android:orderInCategory="101"
+		android:icon="@drawable/baseline_dark_mode_24"
+		app:showAsAction="always" />
+	<item
+		android:id="@+id/list"
+		android:title="@string/list"
+		android:orderInCategory="102"
+		android:icon="@drawable/baseline_list_24"
+		app:showAsAction="always" />
+</menu>

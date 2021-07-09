@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.gridlayout.widget.GridLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	app:columnCount="2"
+	app:rowCount="1"
+	app:useDefaultMargins="true">
+
+	<androidx.appcompat.widget.LinearLayoutCompat
+		android:orientation="vertical"
+		android:layout_width="0dp"
+		android:layout_height="match_parent"
+		app:layout_columnWeight="1">
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textAlignment="center"
+			android:background="@color/primary_light"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:textStyle="bold"
+			android:text="@string/sura" />
+
+		<ListView
+			android:id="@+id/sura"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"/>
+
+	</androidx.appcompat.widget.LinearLayoutCompat>
+
+	<androidx.appcompat.widget.LinearLayoutCompat
+		android:orientation="vertical"
+		android:layout_width="0dp"
+		android:layout_height="match_parent"
+		app:layout_columnWeight="1">
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textAlignment="center"
+			android:textStyle="bold"
+			android:background="@color/primary_light"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:text="@string/juz"/>
+
+		<ListView
+			android:id="@+id/juz"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"/>
+
+	</androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.gridlayout.widget.GridLayout>

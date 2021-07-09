@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+    signingConfigs {
+        release {
+            storeFile file('maknoon.jks')
+            storePassword "naseh11"
+            keyAlias "maknoon"
+            keyPassword "naseh11"
+        }
+    }
+    defaultConfig {
+        applicationId "com.maknoon.quran"
+        minSdkVersion 19
+        targetSdkVersion 30
+        versionCode 2
+        versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    assetPacks = [":asset_pack_warsh"]
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.3.0-rc01'
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation "androidx.gridlayout:gridlayout:1.0.0"
+    implementation 'com.google.android.play:core:1.10.0'
+}
