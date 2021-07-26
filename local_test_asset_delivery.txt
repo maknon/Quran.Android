@@ -1,7 +1,7 @@
 # https://developer.android.com/guide/playcore/asset-delivery/test#steps-native-java
 # better to be excuted from Android studio Terminal
 
-# First build app bundle (Generate Signed Bundle -> pick debug )
+# First build app bundle (Generate Signed Bundle -> pick debug)
 
 $ java -jar bundletool-all.jar build-apks --bundle=app/debug/app-debug.aab   --output=output.apks --local-testing
 

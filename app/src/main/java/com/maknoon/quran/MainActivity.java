@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity
 	static final String EXTRA_page = "com.maknoon.quran.page";
 	static final String EXTRA_nightMode = "com.maknoon.quran.nightMode";
 	static final String EXTRA_pagesFolder = "com.maknoon.quran.pagesFolder";
-	static final String EXTRA_warshDownloaded = "com.maknoon.quran.warshDownloaded";
 
 	AssetPackManager assetPackManager;
 
@@ -100,13 +99,11 @@ public class MainActivity extends AppCompatActivity
 
 			page = savedInstanceState.getInt(EXTRA_page);
 			nightMode = savedInstanceState.getBoolean(EXTRA_nightMode);
-			warshDownloaded = savedInstanceState.getBoolean(EXTRA_warshDownloaded);
 			pagesFolder = savedInstanceState.getString(EXTRA_pagesFolder);
 		}
 		else
 		{
 			page = mPrefs.getInt(EXTRA_page, 0);
-			warshDownloaded = mPrefs.getBoolean(EXTRA_warshDownloaded, false);
 			pagesFolder = mPrefs.getString(EXTRA_pagesFolder, "hafs");
 		}
 
@@ -168,6 +165,11 @@ public class MainActivity extends AppCompatActivity
 					}
 				}
 		);
+
+		if(assetPackManager == null) assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
+		final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
+		if (assetPackPath != null)
+			warshDownloaded = true;
 	}
 
 	@Override
@@ -293,9 +295,6 @@ public class MainActivity extends AppCompatActivity
 
 									warshDownloaded = true;
 									qiraatMenuItem.setVisible(true);
-
-									final SharedPreferences.Editor mEditor = mPrefs.edit();
-									mEditor.putBoolean(EXTRA_warshDownloaded, warshDownloaded).apply();
 
 									final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
 									ad.setMessage(R.string.download_warsh_finished)
@@ -469,7 +468,6 @@ public class MainActivity extends AppCompatActivity
 	{
 		savedInstanceState.putInt(EXTRA_page, page);
 		savedInstanceState.putBoolean(EXTRA_nightMode, nightMode);
-		savedInstanceState.putBoolean(EXTRA_warshDownloaded, warshDownloaded);
 		savedInstanceState.putString(EXTRA_pagesFolder, pagesFolder);
 
 		super.onSaveInstanceState(savedInstanceState);
