@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:bottom="24dp"
+        android:left="24dp"
+        android:right="24dp"
+        android:top="24dp">
+
+        <selector>
+            <item android:drawable="@drawable/outline_backspace_24"/>
+        </selector>
+    </item>
+</layer-list>

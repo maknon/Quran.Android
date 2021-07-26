@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">القرآن العظيم</string>
-	<string name="qiraat">القراءة (حفص - ورش)</string>
+	<string name="qiraat">تحميل قراءة ورش</string>
+	<string name="warsh">قراءة ورش</string>
+	<string name="hafs">قراءة حفص</string>
 	<string name="darkmode">قراءة ليلية</string>
 	<string name="list">قائمة السور والأجزاء</string>
 	<string name="sura">السورة</string>

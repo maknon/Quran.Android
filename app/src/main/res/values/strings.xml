@@ -1,6 +1,8 @@
 <resources>
-	<string name="app_name">Quran</string>
-	<string name="qiraat">Qiraat</string>
+	<string name="app_name">Holy Quran</string>
+	<string name="qiraat">Download Warsh</string>
+	<string name="warsh">Warsh</string>
+	<string name="hafs">Hafs</string>
 	<string name="darkmode">Dark Mode</string>
 	<string name="list">Sura/Juz List</string>
 	<string name="sura">Sura</string>

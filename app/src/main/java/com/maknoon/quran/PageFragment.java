@@ -7,6 +7,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +30,20 @@ public class PageFragment extends Fragment
 	private int page;
 
 	private MainActivity mainActivity;
-
+	private final Handler hideHandler = new Handler();
+	private final Runnable hideRunnable = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			final ActionBar ab = mainActivity.getSupportActionBar();
+			if (ab != null)
+			{
+				if (ab.isShowing())
+					ab.hide();
+			}
+		}
+	};
 	@Override
 	public void onAttach(@NonNull Context context)
 	{
@@ -72,7 +86,11 @@ public class PageFragment extends Fragment
 							if (ab.isShowing())
 								ab.hide();
 							else
+							{
+								hideHandler.removeCallbacks(hideRunnable);
+								hideHandler.postDelayed(hideRunnable, 4000); // in ms
 								ab.show();
+							}
 						}
 					}
 				}
@@ -128,6 +146,8 @@ public class PageFragment extends Fragment
 				final ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
 				pageView.setColorFilter(filter);
 			}
+			else
+				pageView.setBackgroundColor(Color.rgb(255, 255, 242)); // "#FFFFF2"
 
 			/*
 			if(page == 2)

@@ -3,23 +3,30 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:tag="page_number"
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<com.google.android.material.textfield.TextInputLayout
 		android:id="@+id/pageLayout"
+		android:layout_gravity="center"
 		android:layout_width="match_parent"
+		android:padding="50dp"
 		app:boxBackgroundColor="@android:color/transparent"
 		android:layout_height="wrap_content">
 
 		<com.google.android.material.textfield.TextInputEditText
 			android:id="@+id/page"
+			android:focusableInTouchMode="true"
 			android:imeOptions="actionDone"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:inputType="number"
 			android:singleLine="true"
+			android:textColor="@color/primary_dark"
 			android:textAlignment="center"
 			android:maxLength="3"
+			android:textAppearance="@style/TextAppearance.AppCompat.Medium"
 			android:hint="@string/page_hint"/>
 	</com.google.android.material.textfield.TextInputLayout>
 

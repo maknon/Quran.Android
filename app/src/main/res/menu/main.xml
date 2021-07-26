@@ -8,19 +8,13 @@
 		android:title="@string/qiraat"
 		android:orderInCategory="99"
 		android:icon="@drawable/baseline_swap_horiz_24"
-		app:showAsAction="always" />
-	<item
-		android:id="@+id/goTo"
-		android:title="@string/goTo"
-		android:orderInCategory="100"
-		android:icon="@drawable/round_pin_24"
-		app:showAsAction="always" />
+		app:showAsAction="never" />
 	<item
 		android:id="@+id/darkmode"
 		android:title="@string/darkmode"
 		android:orderInCategory="101"
 		android:icon="@drawable/baseline_dark_mode_24"
-		app:showAsAction="always" />
+		app:showAsAction="ifRoom" />
 	<item
 		android:id="@+id/list"
 		android:title="@string/list"

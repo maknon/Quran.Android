@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
@@ -17,24 +18,15 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.InputFilter;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.play.core.assetpacks.AssetPackLocation;
 import com.google.android.play.core.assetpacks.AssetPackManager;
 import com.google.android.play.core.assetpacks.AssetPackManagerFactory;
@@ -49,10 +41,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import static com.maknoon.quran.QuranDb.juz_page;
-import static com.maknoon.quran.QuranDb.sura_ar;
-import static com.maknoon.quran.QuranDb.sura_page;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -119,6 +107,7 @@ public class MainActivity extends AppCompatActivity
 		{
 			page = mPrefs.getInt(EXTRA_page, 0);
 			warshDownloaded = mPrefs.getBoolean(EXTRA_warshDownloaded, false);
+			pagesFolder = mPrefs.getString(EXTRA_pagesFolder, "hafs");
 		}
 
 		final ActionBar ab = getSupportActionBar();
@@ -162,6 +151,23 @@ public class MainActivity extends AppCompatActivity
 				super.onPageScrollStateChanged(state);
 			}
 		});
+
+		mViewPager.setOnClickListener(
+				new View.OnClickListener()
+				{
+					public void onClick(View v)
+					{
+						final ActionBar ab = getSupportActionBar();
+						if (ab != null)
+						{
+							if (ab.isShowing())
+								ab.hide();
+							else
+								ab.show();
+						}
+					}
+				}
+		);
 	}
 
 	@Override
@@ -174,89 +180,9 @@ public class MainActivity extends AppCompatActivity
 				getSupportActionBar().hide();
 				return true;
 
-			case R.id.goTo:
-			{
-				final View dialogView = getLayoutInflater().inflate(R.layout.go_to_page, null);
-				final TextInputEditText pageText = dialogView.findViewById(R.id.page);
-				pageText.setFilters(new InputFilter[]{new InputFilterMinMax("1", "604")});
-
-				final MaterialAlertDialogBuilder list = new MaterialAlertDialogBuilder(this);
-				list.setView(dialogView);
-				final AlertDialog d = list.create();
-				d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-				d.show();
-				pageText.setOnEditorActionListener(new TextView.OnEditorActionListener()
-				{
-					@Override
-					public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-					{
-						boolean handled = false;
-						if (actionId == EditorInfo.IME_ACTION_DONE)
-						{
-							handled = true;
-							final Editable ed = pageText.getText();
-							if (ed != null && !ed.toString().isEmpty())
-							{
-								page = Integer.parseInt(ed.toString()) - 1;
-								mViewPager.setCurrentItem(page, false);
-								d.dismiss();
-							}
-						}
-						return handled;
-					}
-				});
-				pageText.requestFocus();
-				return true;
-			}
-
 			case R.id.list:
-				final View dialogView = getLayoutInflater().inflate(R.layout.go_to, null);
-				final ListView suraList = dialogView.findViewById(R.id.sura);
-				final ListView juzList = dialogView.findViewById(R.id.juz);
-
-				suraList.setScrollingCacheEnabled(false);
-				juzList.setScrollingCacheEnabled(false);
-
-				final MaterialAlertDialogBuilder list = new MaterialAlertDialogBuilder(this);
-				list.setView(dialogView);
-				final AlertDialog d = list.create();
-
-				final ArrayAdapter<String> suraAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sura_ar);
-				suraList.setAdapter(suraAdapter);
-				suraList.setOnItemClickListener(new AdapterView.OnItemClickListener()
-				{
-					@Override
-					public void onItemClick(AdapterView<?> parent, final View view, int position, long id)
-					{
-						page = sura_page[position] - 1;
-						mViewPager.setCurrentItem(page, false);
-						d.dismiss();
-					}
-				});
-
-				final List<Integer> juz = new ArrayList<>(30);
-				for (int i=1; i<=30; i++)
-					juz.add(i);
-
-				final ArrayAdapter<Integer> juzAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, juz);
-				juzList.setAdapter(juzAdapter);
-				juzList.setOnItemClickListener(new AdapterView.OnItemClickListener()
-				{
-					@Override
-					public void onItemClick(AdapterView<?> parent, final View view, int position, long id)
-					{
-						page = juz_page[position] - 1;
-						mViewPager.setCurrentItem(page, false);
-						d.dismiss();
-					}
-				});
-				d.show();
-
-				final WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-				lp.copyFrom(d.getWindow().getAttributes());
-				lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-				lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-				d.getWindow().setAttributes(lp);
+				final DialogFragment goTo = new GoTo();
+				goTo.show(getSupportFragmentManager(), "goTo");
 				return true;
 
 			case R.id.qiraat:
@@ -279,6 +205,10 @@ public class MainActivity extends AppCompatActivity
 					}
 					else
 						pagesFolder = "hafs";
+
+					final SharedPreferences.Editor mEditor = mPrefs.edit();
+					mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+
 					refresh();
 				}
 				else
@@ -348,7 +278,7 @@ public class MainActivity extends AppCompatActivity
 									long totalSize = state.totalBytesToDownload();
 									double percent = 100.0 * downloaded / totalSize;
 									Log.i(TAG, "AssetPackState PercentDone=" + String.format("%.2f", percent));
-									Toast.makeText(MainActivity.this, getString(R.string.download_warsh_percentage, String.format("%.2f", percent)), Toast.LENGTH_SHORT).show();
+									Toast.makeText(MainActivity.this, getString(R.string.download_warsh_percentage, String.valueOf((int)percent)), Toast.LENGTH_SHORT).show();
 									break;
 
 								case AssetPackStatus.TRANSFERRING:
@@ -363,6 +293,7 @@ public class MainActivity extends AppCompatActivity
 
 									warshDownloaded = true;
 									qiraatMenuItem.setVisible(true);
+
 									final SharedPreferences.Editor mEditor = mPrefs.edit();
 									mEditor.putBoolean(EXTRA_warshDownloaded, warshDownloaded).apply();
 
@@ -374,8 +305,13 @@ public class MainActivity extends AppCompatActivity
 												{
 													if(assetPackManager == null)
 														assetPackManager = AssetPackManagerFactory.getInstance(MainActivity.this);
+
 													final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
 													pagesFolder = assetPackPath.assetsPath();
+
+													final SharedPreferences.Editor mEditor = mPrefs.edit();
+													mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+
 													refresh();
 													dialog.dismiss();
 												}
@@ -384,6 +320,7 @@ public class MainActivity extends AppCompatActivity
 											{
 												public void onClick(DialogInterface dialog, int id)
 												{
+													updateMenu();
 													dialog.dismiss();
 												}
 											});
@@ -472,6 +409,21 @@ public class MainActivity extends AppCompatActivity
 		mViewPager.setAdapter(null);
 		mViewPager.setAdapter(pagerAdapter);
 		mViewPager.setCurrentItem(page, false);
+
+		updateMenu();
+	}
+
+	void updateMenu()
+	{
+		if(warshDownloaded)
+		{
+			if(pagesFolder.equals("hafs"))
+				qiraatMenuItem.setTitle(R.string.warsh);
+			else
+				qiraatMenuItem.setTitle(R.string.hafs);
+		}
+		else
+			qiraatMenuItem.setTitle(R.string.qiraat);
 	}
 
 	@Override
@@ -480,6 +432,8 @@ public class MainActivity extends AppCompatActivity
 		getMenuInflater().inflate(R.menu.main, menu);
 		final MenuItem darkmode = menu.findItem(R.id.darkmode);
 		qiraatMenuItem = menu.findItem(R.id.qiraat);
+
+		updateMenu();
 
 		if(nightMode)
 			darkmode.setIcon(R.drawable.baseline_light_mode_24);
