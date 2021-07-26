@@ -51,9 +51,6 @@ public class MainActivity extends AppCompatActivity
 
 	int page = 0;
 	static String pagesFolder = "hafs"; // hafs warsh
-
-	static boolean warshDownloaded = false;
-
 	static boolean nightMode = false;
 
 	PagerAdapter pagerAdapter;
@@ -99,13 +96,11 @@ public class MainActivity extends AppCompatActivity
 
 			page = savedInstanceState.getInt(EXTRA_page);
 			nightMode = savedInstanceState.getBoolean(EXTRA_nightMode);
-			pagesFolder = savedInstanceState.getString(EXTRA_pagesFolder);
 		}
 		else
-		{
 			page = mPrefs.getInt(EXTRA_page, 0);
-			pagesFolder = mPrefs.getString(EXTRA_pagesFolder, "hafs");
-		}
+
+		pagesFolder = mPrefs.getString(EXTRA_pagesFolder, "hafs");
 
 		final ActionBar ab = getSupportActionBar();
 		if (ab != null)
@@ -118,8 +113,6 @@ public class MainActivity extends AppCompatActivity
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		final SharedPreferences.Editor mEditor = mPrefs.edit();
 
 		pagerAdapter = new PagerAdapter(getSupportFragmentManager(), getLifecycle());
 		mViewPager = findViewById(R.id.viewpager);
@@ -139,6 +132,8 @@ public class MainActivity extends AppCompatActivity
 				super.onPageSelected(position);
 
 				page = position;
+
+				final SharedPreferences.Editor mEditor = mPrefs.edit();
 				mEditor.putInt(EXTRA_page, page).apply();
 			}
 
@@ -165,11 +160,6 @@ public class MainActivity extends AppCompatActivity
 					}
 				}
 		);
-
-		if(assetPackManager == null) assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
-		final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-		if (assetPackPath != null)
-			warshDownloaded = true;
 	}
 
 	@Override
@@ -189,22 +179,14 @@ public class MainActivity extends AppCompatActivity
 
 			case R.id.qiraat:
 			{
-				if(warshDownloaded)
+				if(assetPackManager == null)
+					assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
+
+				final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
+				if (assetPackPath != null) // Warsh is downloaded
 				{
 					if (pagesFolder.equals("hafs"))
-					{
-						if(assetPackManager == null)
-							assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
-
-						final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-						if (assetPackPath == null)
-						{
-							Log.e(TAG, "assetPackPath null, asset pack is not ready");
-							pagesFolder = "hafs";
-						}
-						else
-							pagesFolder = assetPackPath.assetsPath();
-					}
+						pagesFolder = assetPackPath.assetsPath();
 					else
 						pagesFolder = "hafs";
 
@@ -215,9 +197,6 @@ public class MainActivity extends AppCompatActivity
 				}
 				else
 				{
-					if(assetPackManager == null)
-						assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
-
 					assetPackManager.getPackStates(Collections.singletonList(assetPackName))
 							.addOnCompleteListener(new OnCompleteListener<AssetPackStates>()
 							{
@@ -230,31 +209,40 @@ public class MainActivity extends AppCompatActivity
 										assetPackStates = task.getResult();
 										final AssetPackState assetPackState = assetPackStates.packStates().get(assetPackName);
 
-										final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
-										ad.setMessage(getString(R.string.download_warsh, (int)(assetPackState.totalBytesToDownload()/(1024f*1024f))))
-												.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
-												{
-													public void onClick(DialogInterface dialog, int id)
+										if(assetPackState.status() ==  AssetPackStatus.COMPLETED)
+										{
+											Toast.makeText(MainActivity.this, "Already Downloaded ! reset", Toast.LENGTH_SHORT).show();
+											qiraatMenuItem.setVisible(true);
+											updateMenu();
+										}
+										else
+										{
+											final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
+											ad.setMessage(getString(R.string.download_warsh, (int) (assetPackState.totalBytesToDownload() / (1024f * 1024f))))
+													.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
 													{
-														final List<String> ls = new ArrayList<>();
-														ls.add(assetPackName);
-														assetPackManager.fetch(ls);
-														dialog.dismiss();
-														Toast.makeText(MainActivity.this, R.string.download_warsh_inprogress, Toast.LENGTH_LONG).show();
+														public void onClick(DialogInterface dialog, int id)
+														{
+															final List<String> ls = new ArrayList<>();
+															ls.add(assetPackName);
+															assetPackManager.fetch(ls);
+															dialog.dismiss();
+															Toast.makeText(MainActivity.this, R.string.download_warsh_inprogress, Toast.LENGTH_LONG).show();
 
-														qiraatMenuItem.setVisible(false);
-													}
-												})
-												.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-												{
-													public void onClick(DialogInterface dialog, int id)
+															qiraatMenuItem.setVisible(false);
+														}
+													})
+													.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
 													{
-														dialog.dismiss();
-													}
-												});
+														public void onClick(DialogInterface dialog, int id)
+														{
+															dialog.dismiss();
+														}
+													});
 
-										final AlertDialog d = ad.create();
-										d.show();
+											final AlertDialog d = ad.create();
+											d.show();
+										}
 									}
 									catch (Exception e)
 									{
@@ -293,7 +281,6 @@ public class MainActivity extends AppCompatActivity
 									// Asset pack is ready to use. Start the game.
 									Log.i(TAG, "AssetPackState COMPLETED");
 
-									warshDownloaded = true;
 									qiraatMenuItem.setVisible(true);
 
 									final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
@@ -306,13 +293,14 @@ public class MainActivity extends AppCompatActivity
 														assetPackManager = AssetPackManagerFactory.getInstance(MainActivity.this);
 
 													final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-													pagesFolder = assetPackPath.assetsPath();
-
-													final SharedPreferences.Editor mEditor = mPrefs.edit();
-													mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
-
-													refresh();
-													dialog.dismiss();
+													if(assetPackPath != null)
+													{
+														pagesFolder = assetPackPath.assetsPath();
+														final SharedPreferences.Editor mEditor = mPrefs.edit();
+														mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+														refresh();
+														dialog.dismiss();
+													}
 												}
 											})
 											.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
@@ -414,7 +402,11 @@ public class MainActivity extends AppCompatActivity
 
 	void updateMenu()
 	{
-		if(warshDownloaded)
+		if(assetPackManager == null)
+			assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
+
+		final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
+		if (assetPackPath != null) // Warsh is downloaded
 		{
 			if(pagesFolder.equals("hafs"))
 				qiraatMenuItem.setTitle(R.string.warsh);
@@ -468,7 +460,6 @@ public class MainActivity extends AppCompatActivity
 	{
 		savedInstanceState.putInt(EXTRA_page, page);
 		savedInstanceState.putBoolean(EXTRA_nightMode, nightMode);
-		savedInstanceState.putString(EXTRA_pagesFolder, pagesFolder);
 
 		super.onSaveInstanceState(savedInstanceState);
 	}

@@ -17,12 +17,20 @@ android {
         applicationId "com.maknoon.quran"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 7
-        versionName "2.3"
+        versionCode 8
+        versionName "2.4"
         vectorDrawables.useSupportLibrary = true
     }
 
     assetPacks = [":asset_pack_warsh"]
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
