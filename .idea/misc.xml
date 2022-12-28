@@ -3,9 +3,17 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Quran.Android/app/src/main/res/layout/activity_main.xml" value="0.10739614994934144" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/baseline_swap_horiz_24.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/circle_outline.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/circle_slice_2.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/circle_slice_4.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/circle_slice_6.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/drawable/circle_slice_8.xml" value="0.1315" />
+        <entry key="..\:/Quran.Android/app/src/main/res/layout/activity_main.xml" value="0.22" />
         <entry key="..\:/Quran.Android/app/src/main/res/layout/go_to.xml" value="0.10739614994934144" />
         <entry key="..\:/Quran.Android/app/src/main/res/layout/page_fragment.xml" value="0.10739614994934144" />
+        <entry key="..\:/Quran.Android/app/src/main/res/layout/page_fragment_next.xml" value="0.17552083333333332" />
+        <entry key="..\:/Quran.Android/app/src/main/res/menu/main.xml" value="0.17552083333333332" />
       </map>
     </option>
   </component>

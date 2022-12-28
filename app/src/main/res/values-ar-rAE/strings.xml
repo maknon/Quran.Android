@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">القرآن العظيم</string>
-	<string name="qiraat">تحميل قراءة ورش</string>
+	<string name="menu_warsh">تحميل قراءة ورش</string>
+	<string name="menu_douri">تحميل قراءة الدوري</string>
+	<string name="menu_qalon">تحميل قراءة قالون</string>
+	<string name="menu_shubah">تحميل قراءة شعبة</string>
 	<string name="warsh">قراءة ورش</string>
 	<string name="hafs">قراءة حفص</string>
+	<string name="douri">قراءة الدوري</string>
+	<string name="qalon">قراءة قالون</string>
+	<string name="shubah">قراءة شعبة</string>
 	<string name="darkmode">قراءة ليلية</string>
 	<string name="list">قائمة السور والأجزاء</string>
 	<string name="sura">السورة</string>
@@ -11,12 +17,12 @@
 	<string name="page">الصفحة</string>
 	<string name="goTo">اذهب إلى</string>
 	<string name="page_hint">اذهب إلى الصفحة</string>
-	<string name="download_warsh">هل تريد تحميل صفحات المصحف بقراءة ورش (%1$d ميجا)</string>
-	<string name="download_warsh_inprogress">يتم تحميل قراءة ورش</string>
-	<string name="download_warsh_finished">تم تحميل قراءة ورش، هل تريد القراءة منها الآن؟</string>
-	<string name="download_warsh_percentage">يتم التحميل حاليا %1$s%%</string>
-	<string name="download_warsh_error">توقف التحميل لسبب ما، رقم الخطأ: %1$d</string>
-	<string name="download_warsh_cancelled">تم إيقاف التحميل</string>
+	<string name="download_qiraat">هل تريد تحميل صفحات المصحف بهذه القراءة (%1$d ميجا)</string>
+	<string name="download_qiraat_inprogress">يتم تحميل صفحات القراءة</string>
+	<string name="download_qiraat_finished">تم تحميل الصفحات، هل تريد القراءة منها الآن؟</string>
+	<string name="download_qiraat_percentage">يتم التحميل حاليا %1$s%%</string>
+	<string name="download_qiraat_error">توقف التحميل لسبب ما، رقم الخطأ: %1$d</string>
+	<string name="download_qiraat_cancelled">تم إيقاف التحميل</string>
 	<string name="ok">متابعة</string>
 	<string name="cancel">إلغاء</string>
 </resources>

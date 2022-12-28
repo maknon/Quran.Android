@@ -3,7 +3,7 @@
 
 # First build app bundle (Generate Signed Bundle -> pick debug)
 
-$ java -jar bundletool-all.jar build-apks --bundle=app/debug/app-debug.aab   --output=output.apks --local-testing
+$ E:\Support\jdk-17\bin\java -jar bundletool-all.jar build-apks --bundle=app/debug/app-debug.aab   --output=output.apks --local-testing
 
-$ set ANDROID_HOME=C:\Users\Ebrahim\AppData\Local\Android\Sdk
-$ java -jar bundletool-all.jar install-apks --apks=output.apks
+$ set ANDROID_HOME=C:\Users\ias12\AppData\Local\Android\Sdk
+$ E:\Support\jdk-17\bin\java -jar bundletool-all.jar install-apks --apks=output.apks

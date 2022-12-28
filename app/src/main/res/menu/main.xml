@@ -4,10 +4,29 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<item
-		android:id="@+id/qiraat"
-		android:title="@string/qiraat"
+		android:id="@+id/menu_hafs"
+		android:title="@string/hafs"
+		android:orderInCategory="97"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_warsh"
+		android:title="@string/menu_warsh"
+		android:orderInCategory="97"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_douri"
+		android:title="@string/menu_douri"
+		android:orderInCategory="98"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_qalon"
+		android:title="@string/menu_qalon"
 		android:orderInCategory="99"
-		android:icon="@drawable/baseline_swap_horiz_24"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_shubah"
+		android:title="@string/menu_shubah"
+		android:orderInCategory="100"
 		app:showAsAction="never" />
 	<item
 		android:id="@+id/darkmode"

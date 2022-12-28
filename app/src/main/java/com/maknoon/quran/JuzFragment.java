@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
@@ -15,11 +14,8 @@ import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static com.maknoon.quran.QuranDb.juz_page;
-import static com.maknoon.quran.QuranDb.sura_ar;
-import static com.maknoon.quran.QuranDb.sura_page;
 
 public class JuzFragment extends Fragment
 {

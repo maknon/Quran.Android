@@ -40,23 +40,21 @@ import com.google.android.play.core.tasks.Task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
 {
 	final static String TAG = "MainActivity";
 
-	String language = "ar";
 	SharedPreferences mPrefs;
 
 	int page = 0;
-	static String pagesFolder = "hafs"; // hafs warsh
+	static String pagesFolder = "hafs";
 	static boolean nightMode = false;
 
 	PagerAdapter pagerAdapter;
 	ViewPager2 mViewPager;
 
-	static final String assetPackName = "asset_pack_warsh";
+	static String assetPackName;
 
 	static final String EXTRA_page = "com.maknoon.quran.page";
 	static final String EXTRA_nightMode = "com.maknoon.quran.nightMode";
@@ -64,7 +62,7 @@ public class MainActivity extends AppCompatActivity
 
 	AssetPackManager assetPackManager;
 
-	MenuItem qiraatMenuItem;
+	MenuItem hafsMenuItem, warshMenuItem, douriMenuItem, qalonMenuItem, shubahMenuItem;
 
 	// This flag should be set to true to enable VectorDrawable support for API < 21
 	static
@@ -73,27 +71,15 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void attachBaseContext(Context base)
-	{
-		mPrefs = base.getSharedPreferences("setting", Context.MODE_PRIVATE);
-		language = mPrefs.getString("language", "ar");
-		super.attachBaseContext(ContextWrapper.wrap(base, new Locale(language)));
-	}
-
-	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+		mPrefs = getSharedPreferences("setting", Context.MODE_PRIVATE);
+
 		if (savedInstanceState != null) // when recreate() this activity if language is change. savedInstanceState will be saved so we need to force the direction
 		{
-			// Force RTL or LTR for the appbar and FloatingActionButton since it is not working when changing the language.
-			if (language.equals("ar"))
-				getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-			else
-				getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-
 			page = savedInstanceState.getInt(EXTRA_page);
 			nightMode = savedInstanceState.getBoolean(EXTRA_nightMode);
 		}
@@ -101,6 +87,17 @@ public class MainActivity extends AppCompatActivity
 			page = mPrefs.getInt(EXTRA_page, 0);
 
 		pagesFolder = mPrefs.getString(EXTRA_pagesFolder, "hafs");
+
+		if (pagesFolder.contains("hafs"))
+			assetPackName = null;
+		else if (pagesFolder.contains("warsh"))
+			assetPackName = "asset_pack_warsh";
+		else if (pagesFolder.contains("douri"))
+			assetPackName = "asset_pack_douri";
+		else if (pagesFolder.contains("qalon"))
+			assetPackName = "asset_pack_qalon";
+		else if (pagesFolder.contains("shubah"))
+			assetPackName = "asset_pack_shubah";
 
 		final ActionBar ab = getSupportActionBar();
 		if (ab != null)
@@ -177,197 +174,39 @@ public class MainActivity extends AppCompatActivity
 				goTo.show(getSupportFragmentManager(), "goTo");
 				return true;
 
-			case R.id.qiraat:
+			case R.id.menu_hafs:
 			{
-				if(assetPackManager == null)
-					assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
+				pagesFolder = "hafs";
 
-				final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-				if (assetPackPath != null) // Warsh is downloaded
-				{
-					if (pagesFolder.equals("hafs"))
-						pagesFolder = assetPackPath.assetsPath();
-					else
-						pagesFolder = "hafs";
+				final SharedPreferences.Editor mEditor = mPrefs.edit();
+				mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
 
-					final SharedPreferences.Editor mEditor = mPrefs.edit();
-					mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+				refresh();
 
-					refresh();
-				}
-				else
-				{
-					assetPackManager.getPackStates(Collections.singletonList(assetPackName))
-							.addOnCompleteListener(new OnCompleteListener<AssetPackStates>()
-							{
-								@Override
-								public void onComplete(@NonNull Task<AssetPackStates> task)
-								{
-									AssetPackStates assetPackStates;
-									try
-									{
-										assetPackStates = task.getResult();
-										final AssetPackState assetPackState = assetPackStates.packStates().get(assetPackName);
+				return true;
+			}
 
-										if(assetPackState.status() ==  AssetPackStatus.COMPLETED)
-										{
-											Toast.makeText(MainActivity.this, "Already Downloaded ! reset", Toast.LENGTH_SHORT).show();
-											qiraatMenuItem.setVisible(true);
-											updateMenu();
-										}
-										else
-										{
-											final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
-											ad.setMessage(getString(R.string.download_warsh, (int) (assetPackState.totalBytesToDownload() / (1024f * 1024f))))
-													.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
-													{
-														public void onClick(DialogInterface dialog, int id)
-														{
-															final List<String> ls = new ArrayList<>();
-															ls.add(assetPackName);
-															assetPackManager.fetch(ls);
-															dialog.dismiss();
-															Toast.makeText(MainActivity.this, R.string.download_warsh_inprogress, Toast.LENGTH_LONG).show();
+			case R.id.menu_warsh:
+			{
+				menuAction("asset_pack_warsh");
+				return true;
+			}
 
-															qiraatMenuItem.setVisible(false);
-														}
-													})
-													.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-													{
-														public void onClick(DialogInterface dialog, int id)
-														{
-															dialog.dismiss();
-														}
-													});
+			case R.id.menu_douri:
+			{
+				menuAction("asset_pack_douri");
+				return true;
+			}
 
-											final AlertDialog d = ad.create();
-											d.show();
-										}
-									}
-									catch (Exception e)
-									{
-										Log.e(TAG, e.getMessage());
-										qiraatMenuItem.setVisible(true);
-									}
-								}
-							});
+			case R.id.menu_qalon:
+			{
+				menuAction("asset_pack_qalon");
+				return true;
+			}
 
-					assetPackManager.registerListener(new AssetPackStateUpdateListener()
-					{
-						@Override
-						public void onStateUpdate(@NonNull AssetPackState state)
-						{
-							switch (state.status())
-							{
-								case AssetPackStatus.PENDING:
-									Log.i(TAG, "AssetPackState Pending");
-									break;
-
-								case AssetPackStatus.DOWNLOADING:
-									long downloaded = state.bytesDownloaded();
-									long totalSize = state.totalBytesToDownload();
-									double percent = 100.0 * downloaded / totalSize;
-									Log.i(TAG, "AssetPackState PercentDone=" + String.format("%.2f", percent));
-									Toast.makeText(MainActivity.this, getString(R.string.download_warsh_percentage, String.valueOf((int)percent)), Toast.LENGTH_SHORT).show();
-									break;
-
-								case AssetPackStatus.TRANSFERRING:
-									// 100% downloaded and assets are being transferred.
-									// Notify user to wait until transfer is complete.
-									Log.i(TAG, "AssetPackState TRANSFERRING transfer progress percentage " + state.transferProgressPercentage());
-									break;
-
-								case AssetPackStatus.COMPLETED:
-									// Asset pack is ready to use. Start the game.
-									Log.i(TAG, "AssetPackState COMPLETED");
-
-									qiraatMenuItem.setVisible(true);
-
-									final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
-									ad.setMessage(R.string.download_warsh_finished)
-											.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
-											{
-												public void onClick(DialogInterface dialog, int id)
-												{
-													if(assetPackManager == null)
-														assetPackManager = AssetPackManagerFactory.getInstance(MainActivity.this);
-
-													final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-													if(assetPackPath != null)
-													{
-														pagesFolder = assetPackPath.assetsPath();
-														final SharedPreferences.Editor mEditor = mPrefs.edit();
-														mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
-														refresh();
-														dialog.dismiss();
-													}
-												}
-											})
-											.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
-											{
-												public void onClick(DialogInterface dialog, int id)
-												{
-													updateMenu();
-													dialog.dismiss();
-												}
-											});
-
-									final AlertDialog d = ad.create();
-									d.show();
-
-									break;
-
-								case AssetPackStatus.FAILED:
-									// Request failed. Notify user.
-									Log.e(TAG, state.errorCode() + "");
-									Toast.makeText(MainActivity.this, getString(R.string.download_warsh_error, state.errorCode()), Toast.LENGTH_LONG).show();
-									qiraatMenuItem.setVisible(true);
-									break;
-
-								case AssetPackStatus.CANCELED:
-									// Request canceled. Notify user.
-									Toast.makeText(MainActivity.this, R.string.download_warsh_cancelled, Toast.LENGTH_LONG).show();
-									qiraatMenuItem.setVisible(true);
-									break;
-
-								case AssetPackStatus.WAITING_FOR_WIFI:
-									/*
-									if (!waitForWifiConfirmationShown)
-									{
-										assetPackManager.showCellularDataConfirmation(MainActivity.this)
-												.addOnSuccessListener(new OnSuccessListener()
-												{
-													@Override
-													public void onSuccess(Integer resultCode)
-													{
-														if (resultCode == RESULT_OK)
-														{
-															Log.d(TAG, "Confirmation dialog has been accepted.");
-														}
-														else if (resultCode == RESULT_CANCELED)
-														{
-															Log.d(TAG, "Confirmation dialog has been denied by the user.");
-														}
-													}
-												});
-										waitForWifiConfirmationShown = true;
-									}
-									*/
-									break;
-
-								case AssetPackStatus.NOT_INSTALLED:
-									// Asset pack is not downloaded yet.
-									Log.e(TAG, "AssetPackStatus NOT_INSTALLED");
-									break;
-								case AssetPackStatus.UNKNOWN:
-									Toast.makeText(MainActivity.this, getString(R.string.download_warsh_error, state.errorCode()), Toast.LENGTH_LONG).show();
-									qiraatMenuItem.setVisible(true);
-									break;
-							}
-						}
-					});
-				}
-
+			case R.id.menu_shubah:
+			{
+				menuAction("asset_pack_shubah");
 				return true;
 			}
 
@@ -405,24 +244,235 @@ public class MainActivity extends AppCompatActivity
 		if(assetPackManager == null)
 			assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
 
+		AssetPackLocation assetPackPath = assetPackManager.getPackLocation("asset_pack_warsh");
+		if (assetPackPath != null) // qiraat is downloaded
+			warshMenuItem.setTitle(R.string.warsh);
+		else
+			warshMenuItem.setTitle(R.string.menu_warsh);
+
+		assetPackPath = assetPackManager.getPackLocation("asset_pack_douri");
+		if (assetPackPath != null) // qiraat is downloaded
+			douriMenuItem.setTitle(R.string.douri);
+		else
+			douriMenuItem.setTitle(R.string.menu_douri);
+
+		assetPackPath = assetPackManager.getPackLocation("asset_pack_qalon");
+		if (assetPackPath != null) // qiraat is downloaded
+			qalonMenuItem.setTitle(R.string.qalon);
+		else
+			qalonMenuItem.setTitle(R.string.menu_qalon);
+
+		assetPackPath = assetPackManager.getPackLocation("asset_pack_shubah");
+		if (assetPackPath != null) // qiraat is downloaded
+			shubahMenuItem.setTitle(R.string.shubah);
+		else
+			shubahMenuItem.setTitle(R.string.menu_shubah);
+	}
+
+	void menuAction(final String assetName)
+	{
+		assetPackName = assetName;
+
+		if(assetPackManager == null)
+			assetPackManager = AssetPackManagerFactory.getInstance(this.getApplicationContext());
+
 		final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
-		if (assetPackPath != null) // Warsh is downloaded
+		if (assetPackPath != null) // qiraat is downloaded
 		{
-			if(pagesFolder.equals("hafs"))
-				qiraatMenuItem.setTitle(R.string.warsh);
-			else
-				qiraatMenuItem.setTitle(R.string.hafs);
+			pagesFolder = assetPackPath.assetsPath();
+
+			final SharedPreferences.Editor mEditor = mPrefs.edit();
+			mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+
+			refresh();
 		}
 		else
-			qiraatMenuItem.setTitle(R.string.qiraat);
+		{
+			assetPackManager.clearListeners();
+			assetPackManager.registerListener(new AssetPackStateUpdateListener()
+			{
+				@Override
+				public void onStateUpdate(@NonNull AssetPackState state)
+				{
+					switch (state.status())
+					{
+						case AssetPackStatus.PENDING:
+							Log.i(TAG, "AssetPackState Pending");
+							break;
+
+						case AssetPackStatus.DOWNLOADING:
+							long downloaded = state.bytesDownloaded();
+							long totalSize = state.totalBytesToDownload();
+							double percent = 100.0 * downloaded / totalSize;
+							Log.i(TAG, "AssetPackState Percent Done=" + String.format("%.2f", percent));
+
+							// TODO: cancel the old Toast before sending a new status since it takes longer time and delay showing the new status
+							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_percentage, String.valueOf((int) percent)), Toast.LENGTH_SHORT).show();
+							break;
+
+						case AssetPackStatus.TRANSFERRING:
+							// 100% downloaded and assets are being transferred.
+							// Notify user to wait until transfer is complete.
+							Log.i(TAG, "AssetPackState TRANSFERRING transfer progress percentage " + state.transferProgressPercentage());
+							break;
+
+						case AssetPackStatus.COMPLETED:
+							// Asset pack is ready to use. Start the use
+							Log.i(TAG, "AssetPackState COMPLETED");
+
+							menuSetVisible(true);
+
+							final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
+							ad.setMessage(R.string.download_qiraat_finished)
+									.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+									{
+										public void onClick(DialogInterface dialog, int id)
+										{
+											if (assetPackManager == null)
+												assetPackManager = AssetPackManagerFactory.getInstance(MainActivity.this);
+
+											final AssetPackLocation assetPackPath = assetPackManager.getPackLocation(assetPackName);
+											if (assetPackPath != null)
+											{
+												pagesFolder = assetPackPath.assetsPath();
+												final SharedPreferences.Editor mEditor = mPrefs.edit();
+												mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+												refresh();
+												dialog.dismiss();
+											}
+										}
+									})
+									.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+									{
+										public void onClick(DialogInterface dialog, int id)
+										{
+											updateMenu();
+											dialog.dismiss();
+										}
+									});
+
+							final AlertDialog d = ad.create();
+							if (!MainActivity.this.isFinishing()) // to avoid crashes if user close the app
+								d.show();
+
+							break;
+
+						case AssetPackStatus.FAILED:
+							// Request failed. Notify user.
+							Log.e(TAG, state.errorCode() + "");
+							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_error, state.errorCode()), Toast.LENGTH_LONG).show();
+							menuSetVisible(true);
+							break;
+
+						case AssetPackStatus.CANCELED:
+							// Request canceled. Notify user.
+							Toast.makeText(MainActivity.this, R.string.download_qiraat_cancelled, Toast.LENGTH_LONG).show();
+							menuSetVisible(true);
+							break;
+
+						case AssetPackStatus.WAITING_FOR_WIFI:
+							/*
+							if (!waitForWifiConfirmationShown)
+							{
+								assetPackManager.showCellularDataConfirmation(MainActivity.this)
+										.addOnSuccessListener(new OnSuccessListener()
+										{
+											@Override
+											public void onSuccess(Integer resultCode)
+											{
+												if (resultCode == RESULT_OK)
+												{
+													Log.d(TAG, "Confirmation dialog has been accepted.");
+												}
+												else if (resultCode == RESULT_CANCELED)
+												{
+													Log.d(TAG, "Confirmation dialog has been denied by the user.");
+												}
+											}
+										});
+								waitForWifiConfirmationShown = true;
+							}
+							*/
+							break;
+
+						case AssetPackStatus.NOT_INSTALLED:
+							// Asset pack is not downloaded yet.
+							Log.e(TAG, "AssetPackStatus NOT_INSTALLED");
+							break;
+						case AssetPackStatus.UNKNOWN:
+							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_error, state.errorCode()), Toast.LENGTH_LONG).show();
+							menuSetVisible(true);
+							break;
+					}
+				}
+			});
+
+			assetPackManager.getPackStates(Collections.singletonList(assetPackName))
+					.addOnCompleteListener(new OnCompleteListener<AssetPackStates>()
+					{
+						@Override
+						public void onComplete(@NonNull Task<AssetPackStates> task)
+						{
+							AssetPackStates assetPackStates;
+							try
+							{
+								assetPackStates = task.getResult();
+								final AssetPackState assetPackState = assetPackStates.packStates().get(assetPackName);
+
+								if (assetPackState.status() == AssetPackStatus.COMPLETED)
+								{
+									Toast.makeText(MainActivity.this, "Already Downloaded ! reset", Toast.LENGTH_SHORT).show();
+									menuSetVisible(true);
+									updateMenu();
+								}
+								else
+								{
+									final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
+									ad.setMessage(getString(R.string.download_qiraat, (int) (assetPackState.totalBytesToDownload() / (1024f * 1024f))))
+											.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+											{
+												public void onClick(DialogInterface dialog, int id)
+												{
+													final List<String> ls = new ArrayList<>();
+													ls.add(assetPackName);
+													assetPackManager.fetch(ls);
+													dialog.dismiss();
+													Toast.makeText(MainActivity.this, R.string.download_qiraat_inprogress, Toast.LENGTH_LONG).show();
+
+													menuSetVisible(false);
+												}
+											})
+											.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+											{
+												public void onClick(DialogInterface dialog, int id)
+												{
+													dialog.dismiss();
+												}
+											});
+
+									final AlertDialog d = ad.create();
+									d.show();
+								}
+							} catch (Exception e)
+							{
+								Log.e(TAG, e.getMessage());
+								menuSetVisible(true);
+							}
+						}
+					});
+		}
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
+	public boolean onCreateOptionsMenu(@NonNull Menu menu)
 	{
 		getMenuInflater().inflate(R.menu.main, menu);
 		final MenuItem darkmode = menu.findItem(R.id.darkmode);
-		qiraatMenuItem = menu.findItem(R.id.qiraat);
+		hafsMenuItem = menu.findItem(R.id.menu_hafs);
+		warshMenuItem = menu.findItem(R.id.menu_warsh);
+		douriMenuItem = menu.findItem(R.id.menu_douri);
+		qalonMenuItem = menu.findItem(R.id.menu_qalon);
+		shubahMenuItem = menu.findItem(R.id.menu_shubah);
 
 		updateMenu();
 
@@ -432,6 +482,15 @@ public class MainActivity extends AppCompatActivity
 			darkmode.setIcon(R.drawable.baseline_dark_mode_24);
 
 		return super.onCreateOptionsMenu(menu);
+	}
+
+	void menuSetVisible(boolean visible)
+	{
+		hafsMenuItem.setVisible(visible);
+		warshMenuItem.setVisible(visible);
+		douriMenuItem.setVisible(visible);
+		qalonMenuItem.setVisible(visible);
+		shubahMenuItem.setVisible(visible);
 	}
 
 	static class PagerAdapter extends FragmentStateAdapter

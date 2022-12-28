@@ -1,8 +1,14 @@
 <resources>
 	<string name="app_name">Holy Quran</string>
-	<string name="qiraat">Download Warsh</string>
+	<string name="menu_warsh">Download Warsh</string>
+	<string name="menu_douri">Download Douri</string>
+	<string name="menu_qalon">Download Qalon</string>
+	<string name="menu_shubah">Download Shubah</string>
 	<string name="warsh">Warsh</string>
 	<string name="hafs">Hafs</string>
+	<string name="douri">Douri</string>
+	<string name="qalon">Qalon</string>
+	<string name="shubah">Shubah</string>
 	<string name="darkmode">Dark Mode</string>
 	<string name="list">Sura/Juz List</string>
 	<string name="sura">Sura</string>
@@ -10,12 +16,12 @@
 	<string name="page">Page</string>
 	<string name="goTo">Go To</string>
 	<string name="page_hint">Go To Page</string>
-	<string name="download_warsh">Do you want to download Warsh pages (%1$d MB)</string>
-	<string name="download_warsh_inprogress">Downloading Warsh pages is in progress</string>
-	<string name="download_warsh_finished">Warsh pages are available now, do you want to display it ?</string>
-	<string name="download_warsh_percentage">Downloading is in progress %1$s%%</string>
-	<string name="download_warsh_error">Download is interrupted, error code: %1$d</string>
-	<string name="download_warsh_cancelled">Download is cancelled</string>
+	<string name="download_qiraat">Do you want to download qiraat pages (%1$d MB)</string>
+	<string name="download_qiraat_inprogress">Downloading qiraat pages is in progress</string>
+	<string name="download_qiraat_finished">Pages are available now, do you want to display it ?</string>
+	<string name="download_qiraat_percentage">Downloading is in progress %1$s%%</string>
+	<string name="download_qiraat_error">Download is interrupted, error code: %1$d</string>
+	<string name="download_qiraat_cancelled">Download is cancelled</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 </resources>

@@ -44,6 +44,7 @@ public class PageFragment extends Fragment
 			}
 		}
 	};
+
 	@Override
 	public void onAttach(@NonNull Context context)
 	{
@@ -118,13 +119,19 @@ public class PageFragment extends Fragment
 		{
 			final InputStream in;
 
-			if(pagesFolder.equals("hafs"))
+			if (pagesFolder.contains("hafs"))
 			{
 				final AssetManager am = getResources().getAssets();
 				in = am.open("hafs/" + (page + 1) + ".png");
 			}
-			else
+			else if (pagesFolder.contains("warsh"))
 				in = new FileInputStream((pagesFolder + "/warsh/"+ (page + 1) + ".png"));
+			else if (pagesFolder.contains("douri"))
+				in = new FileInputStream((pagesFolder + "/douri/"+ (page + 1) + ".png"));
+			else if (pagesFolder.contains("qalon"))
+				in = new FileInputStream((pagesFolder + "/qalon/"+ (page + 1) + ".png"));
+			else //if (pagesFolder.contains("shubah"))
+				in = new FileInputStream((pagesFolder + "/shubah/"+ (page + 1) + ".png"));
 
 			final Drawable pg = Drawable.createFromStream(in, null);
 			pageView.setImageDrawable(pg);
