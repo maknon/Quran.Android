@@ -18,7 +18,7 @@
 	<string name="goTo">اذهب إلى</string>
 	<string name="page_hint">اذهب إلى الصفحة</string>
 	<string name="download_qiraat">هل تريد تحميل صفحات المصحف بهذه القراءة (%1$d ميجا)</string>
-	<string name="download_qiraat_inprogress">يتم تحميل صفحات القراءة</string>
+	<string name="download_qiraat_completed">تم التحميل</string>
 	<string name="download_qiraat_finished">تم تحميل الصفحات، هل تريد القراءة منها الآن؟</string>
 	<string name="download_qiraat_percentage">يتم التحميل حاليا %1$s%%</string>
 	<string name="download_qiraat_error">توقف التحميل لسبب ما، رقم الخطأ: %1$d</string>

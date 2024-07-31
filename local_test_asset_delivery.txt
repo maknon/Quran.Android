@@ -2,8 +2,14 @@
 # better to be excuted from Android studio Terminal
 
 # First build app bundle (Generate Signed Bundle -> pick debug)
+# uninstall app
 
-$ E:\Support\jdk-17\bin\java -jar bundletool-all.jar build-apks --bundle=app/debug/app-debug.aab   --output=output.apks --local-testing
+$ E:\Support\jdk-21\bin\java -jar bundletool-all.jar build-apks --bundle=app/build/outputs/bundle/debug/app-debug.aab --overwrite --output=output.apks --local-testing
 
+# For cmd
 $ set ANDROID_HOME=C:\Users\ias12\AppData\Local\Android\Sdk
-$ E:\Support\jdk-17\bin\java -jar bundletool-all.jar install-apks --apks=output.apks
+
+# for PS
+$ $env:ANDROID_HOME='C:\Users\ias12\AppData\Local\Android\Sdk'
+
+$ E:\Support\jdk-21\bin\java -jar bundletool-all.jar install-apks --apks=output.apks

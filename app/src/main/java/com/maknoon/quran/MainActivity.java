@@ -15,17 +15,19 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.play.core.assetpacks.AssetPackLocation;
 import com.google.android.play.core.assetpacks.AssetPackManager;
@@ -34,8 +36,6 @@ import com.google.android.play.core.assetpacks.AssetPackState;
 import com.google.android.play.core.assetpacks.AssetPackStateUpdateListener;
 import com.google.android.play.core.assetpacks.AssetPackStates;
 import com.google.android.play.core.assetpacks.model.AssetPackStatus;
-import com.google.android.play.core.tasks.OnCompleteListener;
-import com.google.android.play.core.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +69,9 @@ public class MainActivity extends AppCompatActivity
 	{
 		AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
 	}
+
+	DBHelper mDbHelper;
+	static SQLiteDatabase db;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -141,93 +144,83 @@ public class MainActivity extends AppCompatActivity
 			}
 		});
 
-		mViewPager.setOnClickListener(
-				new View.OnClickListener()
-				{
-					public void onClick(View v)
-					{
-						final ActionBar ab = getSupportActionBar();
-						if (ab != null)
-						{
-							if (ab.isShowing())
-								ab.hide();
-							else
-								ab.show();
-						}
-					}
-				}
-		);
+		mDbHelper = new DBHelper(this);
+		db = mDbHelper.getReadableDatabase();
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		final int id = item.getItemId();
-		switch (id)
+
+		if (id == android.R.id.home)
 		{
-			case android.R.id.home:
-				getSupportActionBar().hide();
-				return true;
-
-			case R.id.list:
-				final DialogFragment goTo = new GoTo();
-				goTo.show(getSupportFragmentManager(), "goTo");
-				return true;
-
-			case R.id.menu_hafs:
-			{
-				pagesFolder = "hafs";
-
-				final SharedPreferences.Editor mEditor = mPrefs.edit();
-				mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
-
-				refresh();
-
-				return true;
-			}
-
-			case R.id.menu_warsh:
-			{
-				menuAction("asset_pack_warsh");
-				return true;
-			}
-
-			case R.id.menu_douri:
-			{
-				menuAction("asset_pack_douri");
-				return true;
-			}
-
-			case R.id.menu_qalon:
-			{
-				menuAction("asset_pack_qalon");
-				return true;
-			}
-
-			case R.id.menu_shubah:
-			{
-				menuAction("asset_pack_shubah");
-				return true;
-			}
-
-			case R.id.darkmode:
-
-				if(nightMode)
-				{
-					nightMode = false;
-					item.setIcon(R.drawable.baseline_dark_mode_24);
-				}
-				else
-				{
-					nightMode = true;
-					item.setIcon(R.drawable.baseline_light_mode_24);
-				}
-				refresh();
-				return true;
-
-			default:
-				return super.onOptionsItemSelected(item);
+			final ActionBar ab = getSupportActionBar();
+			if (ab != null)
+				ab.hide();
+			return true;
 		}
+
+		if (id == R.id.list)
+		{
+			final DialogFragment goTo = new GoTo();
+			goTo.show(getSupportFragmentManager(), "goTo");
+			return true;
+		}
+
+		if (id == R.id.menu_hafs)
+		{
+			pagesFolder = "hafs";
+
+			final SharedPreferences.Editor mEditor = mPrefs.edit();
+			mEditor.putString(EXTRA_pagesFolder, pagesFolder).apply();
+
+			refresh();
+
+			return true;
+		}
+
+		if (id == R.id.menu_warsh)
+		{
+			menuAction("asset_pack_warsh");
+			return true;
+		}
+
+		if (id == R.id.menu_douri)
+		{
+			menuAction("asset_pack_douri");
+			return true;
+		}
+
+		if (id == R.id.menu_qalon)
+		{
+			menuAction("asset_pack_qalon");
+			return true;
+		}
+
+		if (id == R.id.menu_shubah)
+		{
+			menuAction("asset_pack_shubah");
+			return true;
+		}
+
+		if (id == R.id.darkmode)
+		{
+			if (nightMode)
+			{
+				nightMode = false;
+				item.setIcon(R.drawable.baseline_dark_mode_24);
+			}
+			else
+			{
+				nightMode = true;
+				item.setIcon(R.drawable.baseline_light_mode_24);
+			}
+			refresh();
+			return true;
+		}
+
+		return super.onOptionsItemSelected(item);
 	}
 
 	void refresh()
@@ -305,9 +298,7 @@ public class MainActivity extends AppCompatActivity
 							long totalSize = state.totalBytesToDownload();
 							double percent = 100.0 * downloaded / totalSize;
 							Log.i(TAG, "AssetPackState Percent Done=" + String.format("%.2f", percent));
-
-							// TODO: cancel the old Toast before sending a new status since it takes longer time and delay showing the new status
-							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_percentage, String.valueOf((int) percent)), Toast.LENGTH_SHORT).show();
+							showToast(getString(R.string.download_qiraat_percentage, String.valueOf((int) percent)));
 							break;
 
 						case AssetPackStatus.TRANSFERRING:
@@ -319,7 +310,7 @@ public class MainActivity extends AppCompatActivity
 						case AssetPackStatus.COMPLETED:
 							// Asset pack is ready to use. Start the use
 							Log.i(TAG, "AssetPackState COMPLETED");
-
+							showToast(getString(R.string.download_qiraat_completed));
 							menuSetVisible(true);
 
 							final MaterialAlertDialogBuilder ad = new MaterialAlertDialogBuilder(MainActivity.this);
@@ -360,13 +351,13 @@ public class MainActivity extends AppCompatActivity
 						case AssetPackStatus.FAILED:
 							// Request failed. Notify user.
 							Log.e(TAG, state.errorCode() + "");
-							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_error, state.errorCode()), Toast.LENGTH_LONG).show();
+							showToast(getString(R.string.download_qiraat_error, state.errorCode()));
 							menuSetVisible(true);
 							break;
 
 						case AssetPackStatus.CANCELED:
 							// Request canceled. Notify user.
-							Toast.makeText(MainActivity.this, R.string.download_qiraat_cancelled, Toast.LENGTH_LONG).show();
+							showToast(getString(R.string.download_qiraat_cancelled));
 							menuSetVisible(true);
 							break;
 
@@ -400,7 +391,7 @@ public class MainActivity extends AppCompatActivity
 							Log.e(TAG, "AssetPackStatus NOT_INSTALLED");
 							break;
 						case AssetPackStatus.UNKNOWN:
-							Toast.makeText(MainActivity.this, getString(R.string.download_qiraat_error, state.errorCode()), Toast.LENGTH_LONG).show();
+							showToast(getString(R.string.download_qiraat_error));
 							menuSetVisible(true);
 							break;
 					}
@@ -437,8 +428,6 @@ public class MainActivity extends AppCompatActivity
 													ls.add(assetPackName);
 													assetPackManager.fetch(ls);
 													dialog.dismiss();
-													Toast.makeText(MainActivity.this, R.string.download_qiraat_inprogress, Toast.LENGTH_LONG).show();
-
 													menuSetVisible(false);
 												}
 											})
@@ -461,6 +450,16 @@ public class MainActivity extends AppCompatActivity
 						}
 					});
 		}
+	}
+
+	Toast toast;
+	void showToast(String text)
+	{
+		if(toast != null)
+			toast.cancel();
+
+		toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
+		toast.show();
 	}
 
 	@Override
@@ -504,7 +503,7 @@ public class MainActivity extends AppCompatActivity
 		@Override
 		public Fragment createFragment(int position)
 		{
-			return PageFragment.newInstance(position);
+			return PageFragmentNEXT.newInstance(position);
 		}
 
 		@Override
@@ -512,6 +511,17 @@ public class MainActivity extends AppCompatActivity
 		{
 			return 604;
 		}
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		if(db != null)
+			db.close();
+		if(mDbHelper != null)
+			mDbHelper.close();
+
+		super.onDestroy();
 	}
 
 	@Override

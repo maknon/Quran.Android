@@ -8,8 +8,8 @@ def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.1"
+    namespace 'com.maknoon.quran'
+    compileSdk 34
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'])
@@ -20,19 +20,25 @@ android {
     }
     defaultConfig {
         applicationId "com.maknoon.quran"
-        minSdkVersion 19
-        targetSdkVersion 33
-        versionCode 9
-        versionName "3.0"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 10
+        versionName "4.0"
         vectorDrawables.useSupportLibrary = true
+        resourceConfigurations = ["en-rUS", "ar-rAE"]
     }
 
     sourceSets {
         main {
             java {
-                exclude '**/PageFragmentNEXT.java'
+                //exclude '**/PageFragmentNEXT.java'
+                exclude '**/PageFragmentWebview.java'
             }
         }
+    }
+
+    androidResources {
+        noCompress += ['.svgz']
     }
 
     assetPacks = [":asset_pack_warsh", ":asset_pack_qalon", ":asset_pack_shubah", ":asset_pack_douri"]
@@ -47,9 +53,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.0-alpha01'
-    implementation 'com.google.android.material:material:1.8.0-beta01'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation 'com.google.android.play:core:1.10.3'
+    implementation 'androidx.appcompat:appcompat:1.7.0-alpha03'
+    implementation 'com.google.android.material:material:1.12.0-alpha03'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha13'
+    implementation 'com.google.android.play:asset-delivery:2.1.0'
+    implementation 'io.coil-kt:coil-svg:2.5.0'
+    implementation 'io.coil-kt:coil:2.5.0'
 }

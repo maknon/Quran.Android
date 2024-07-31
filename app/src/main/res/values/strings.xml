@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">Holy Quran</string>
+	<string name="app_name">Noble Quran</string>
 	<string name="menu_warsh">Download Warsh</string>
 	<string name="menu_douri">Download Douri</string>
 	<string name="menu_qalon">Download Qalon</string>
@@ -17,7 +17,7 @@
 	<string name="goTo">Go To</string>
 	<string name="page_hint">Go To Page</string>
 	<string name="download_qiraat">Do you want to download qiraat pages (%1$d MB)</string>
-	<string name="download_qiraat_inprogress">Downloading qiraat pages is in progress</string>
+	<string name="download_qiraat_completed">Download is completed</string>
 	<string name="download_qiraat_finished">Pages are available now, do you want to display it ?</string>
 	<string name="download_qiraat_percentage">Downloading is in progress %1$s%%</string>
 	<string name="download_qiraat_error">Download is interrupted, error code: %1$d</string>

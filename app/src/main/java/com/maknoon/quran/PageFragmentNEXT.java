@@ -2,18 +2,23 @@ package com.maknoon.quran;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.LightingColorFilter;
-import android.graphics.drawable.Drawable;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,13 +30,23 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import static com.maknoon.quran.MainActivity.EXTRA_page;
 import static com.maknoon.quran.MainActivity.nightMode;
 import static com.maknoon.quran.MainActivity.pagesFolder;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+import coil.Coil;
+import coil.ImageLoader;
+import coil.decode.SvgDecoder;
+import coil.request.ImageRequest;
+import coil.size.Precision;
+import coil.size.Scale;
+import coil.size.Size;
 
 public class PageFragmentNEXT extends Fragment
 {
@@ -62,9 +77,9 @@ public class PageFragmentNEXT extends Fragment
 			mainActivity = (MainActivity) context;
 	}
 
-	static PageFragment newInstance(int page)
+	static PageFragmentNEXT newInstance(int page)
 	{
-		final PageFragment fragmentFirst = new PageFragment();
+		final PageFragmentNEXT fragmentFirst = new PageFragmentNEXT();
 		final Bundle args = new Bundle();
 		args.putInt(EXTRA_page, page);
 		fragmentFirst.setArguments(args);
@@ -83,242 +98,202 @@ public class PageFragmentNEXT extends Fragment
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		final View view = inflater.inflate(R.layout.page_fragment_next, container, false);
+		view.setBackgroundColor(nightMode ? Color.BLACK : Color.rgb(255, 255, 242)); // "#FFFFF2"
+
 		final FrameLayout fl = view.findViewById(R.id.frameLayout);
 
-		fl.setOnClickListener(
-				new View.OnClickListener()
+		float[] invertMX = {
+				-1f, 0f, 0f, 0f, 255f,
+				0f, -1f, 0f, 0f, 255f,
+				0f, 0f, -1f, 0f, 255f,
+				0f, 0f, 0f, 1f, 0f
+		};
+		final ColorMatrix colorMatrix = new ColorMatrix(invertMX);
+		final ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+
+		final DisplayMetrics displayMetrics = new DisplayMetrics();
+		mainActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+		final float padding = 5 * displayMetrics.density; // padding in px page_fragment_next.xml
+		final float displayWidth = displayMetrics.widthPixels - (2 * padding); // pageView.getWidth() is not working since it should be displayed. we are estimating it based on display
+
+		final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+		layoutParams.gravity = Gravity.CENTER;
+		layoutParams.setMargins(0,0,0,0);
+
+		final File svgFile;
+		if (pagesFolder.contains("warsh"))
+			svgFile = new File(pagesFolder + "/warsh/" + (page + 1) + ".svgz");
+		else if (pagesFolder.contains("douri"))
+			svgFile = new File(pagesFolder + "/douri/" + (page + 1) + ".svgz");
+		else if (pagesFolder.contains("qalon"))
+			svgFile = new File(pagesFolder + "/qalon/" + (page + 1) + ".svgz");
+		else //if (pagesFolder.contains("shubah"))
+			svgFile = new File(pagesFolder + "/shubah/" + (page + 1) + ".svgz");
+
+		final AppCompatImageView pageView = new AppCompatImageView(mainActivity);
+		final ImageLoader imageLoader = Coil.imageLoader(mainActivity);
+		imageLoader.enqueue(new ImageRequest.Builder(mainActivity)
+				.data(pagesFolder.contains("hafs") ? Uri.parse("file:///android_asset/hafs/" + (page + 1) + ".svgz") : svgFile)
+				.decoderFactory(new SvgDecoder.Factory())
+				.target(pageView)
+				.build());
+		fl.addView(pageView, layoutParams);
+
+		if (nightMode)
+			pageView.setColorFilter(filter);
+
+		if (pagesFolder.equals("hafs"))
+		{
+			final Vector<String> location = new Vector<>();
+			final Vector<Integer> ayah = new Vector<>();
+			final Vector<Integer> surah = new Vector<>();
+
+			final Cursor mCursor = MainActivity.db.rawQuery("SELECT * FROM Quran WHERE Page = " + (page + 1), null);
+			if (mCursor.moveToFirst())
+			{
+				for (int i = 0; i < mCursor.getCount(); i++)
 				{
-					public void onClick(View v)
+					final int aya = mCursor.getInt(mCursor.getColumnIndexOrThrow("Aya"));
+					final int sura = mCursor.getInt(mCursor.getColumnIndexOrThrow("Sura"));
+					final String lc = mCursor.getString(mCursor.getColumnIndexOrThrow("Location"));
+
+					location.add(lc);
+					surah.add(sura);
+					ayah.add(aya);
+
+					mCursor.moveToNext();
+				}
+			}
+			mCursor.close();
+
+			final Vector<List<RectF>> locations = new Vector<>();
+			for (String lc : location)
+			{
+				if (!lc.isEmpty())
+				{
+					final StringTokenizer tokens = new StringTokenizer(lc, "-");
+					final String[] dims = tokens.nextToken().split(",");
+					final float w = Float.parseFloat(dims[0]);
+					final float h = Float.parseFloat(dims[1]);
+
+					final int count = tokens.countTokens();
+
+					final float pageWidth = displayWidth;
+					final float pageHeight = pageWidth * h / w;
+
+					final List<RectF> regions = new ArrayList<>(count);
+
+					for (int y = 0; y < count; y++)
 					{
-						final ActionBar ab = mainActivity.getSupportActionBar();
-						if (ab != null)
+						final StringTokenizer dimensions = new StringTokenizer(tokens.nextToken(), ",");
+						if (dimensions.hasMoreTokens())
 						{
-							if (ab.isShowing())
-								ab.hide();
-							else
+							final float xx = Float.parseFloat(dimensions.nextToken()) / w * pageWidth;
+							final float yy = Float.parseFloat(dimensions.nextToken()) / h * pageHeight;
+							final float width = Float.parseFloat(dimensions.nextToken()) / w * pageWidth;
+							final float height = Float.parseFloat(dimensions.nextToken()) / h * pageHeight;
+							regions.add(new RectF(xx, yy, xx + width, yy + height));
+						}
+					}
+
+					locations.add(regions);
+				}
+			}
+
+			pageView.setOnTouchListener(new View.OnTouchListener()
+			{
+				long startTime, endTime;
+				boolean allowActionBar;
+
+				@Override
+				public boolean onTouch(View v, MotionEvent event)
+				{
+					switch (event.getAction())
+					{
+						case MotionEvent.ACTION_DOWN:
+							startTime = endTime = event.getEventTime();
+							allowActionBar = true;
+							return true; // a must or ACTION_UP will not triggered. https://stackoverflow.com/questions/15799839/motionevent-action-up-not-called
+
+						case MotionEvent.ACTION_UP:
+						{
+							if(allowActionBar)
 							{
-								hideHandler.removeCallbacks(hideRunnable);
-								hideHandler.postDelayed(hideRunnable, 4000); // in ms
-								ab.show();
+								final ActionBar ab = mainActivity.getSupportActionBar();
+								if (ab != null)
+								{
+									if (ab.isShowing())
+										ab.hide();
+									else
+									{
+										hideHandler.removeCallbacks(hideRunnable);
+										hideHandler.postDelayed(hideRunnable, 4000); // in ms
+										ab.show();
+									}
+								}
+							}
+							startTime = endTime; // reset
+							allowActionBar = false;
+							return true;
+						}
+
+						case MotionEvent.ACTION_MOVE:
+						{
+							endTime = event.getEventTime();
+							if ((endTime - startTime) > 800) // 800ms
+							{
+								final float x = event.getX();
+								final float y = event.getY();
+								for (int e = 0; e < locations.size(); e++)
+								{
+									boolean found = false;
+									final List<RectF> regions = locations.get(e);
+									final Path area = new Path();
+									for (int i = 0; i < regions.size(); i++)
+									{
+										if (found)
+										{
+											final Path region = new Path();
+											region.addRect(regions.get(i), Path.Direction.CW);
+											area.op(region, Path.Op.UNION);
+										}
+										else
+										{
+											if (regions.get(i).contains(x, y))
+											{
+												final int childCount = fl.getChildCount();
+												if (childCount > 1)
+													fl.removeViews(1, childCount - 1);
+
+												found = true;
+												i = -1;
+											}
+										}
+									}
+
+									startTime = endTime;
+									allowActionBar = false;
+
+									if (found)
+									{
+										final Paint paint = new Paint();
+										paint.setColor(Color.parseColor("#30CD5C5C"));
+										final Bitmap bg = Bitmap.createBitmap(pageView.getWidth(), pageView.getHeight(), Bitmap.Config.ARGB_8888);
+										final Canvas canvas = new Canvas(bg);
+										canvas.drawPath(area, paint);
+										final AppCompatImageView highlightCanvas = new AppCompatImageView(mainActivity);
+										highlightCanvas.setImageBitmap(bg);
+										fl.addView(highlightCanvas, layoutParams);
+										return true;
+									}
+								}
 							}
 						}
 					}
+					return false;
 				}
-		);
-
-		/*
-		cannot have svg files for the pages since it has very lengthy paths resulting in:
-		java.lang.IllegalArgumentException: R is not a valid verb. Failure occurred at position 2 of path: STRING_TOO_LARGE
-		No solution for it even using optimizers e.g. svgo. Android recommend 200dp x 200dp for performance. those files will hit the performance badly
-		switch (page)
-		{
-			case 0:
-				pageView.setImageDrawable(AppCompatResources.getDrawable(mainContext, R.drawable.ic_600_1));
-				break;
-			case 1:
-				pageView.setImageDrawable(AppCompatResources.getDrawable(mainContext, R.drawable.ic_600_2));
-				break;
-			default:
-				pageView.setImageDrawable(AppCompatResources.getDrawable(mainContext, R.drawable.ic_600_3));
-				break;
+			});
 		}
-		*/
-
-		final InputStream in;
-
-		try
-		{
-			if(pagesFolder.equals("hafs"))
-			{
-				final AssetManager am = getResources().getAssets();
-				in = am.open("hafs/" + (page + 1) + "-f.png");
-
-				final Drawable pg = Drawable.createFromStream(in, null);
-				final AppCompatImageView frameView = new AppCompatImageView(mainActivity);
-				frameView.setImageDrawable(pg);
-				fl.addView(frameView);
-
-				final DBHelper mDbHelper = new DBHelper(mainActivity);
-				final SQLiteDatabase db = mDbHelper.getReadableDatabase();
-				final Cursor mCursor = db.rawQuery("SELECT * FROM Quran WHERE Page = " + (page + 1), null);
-				if (mCursor.moveToFirst())
-				{
-					for (int i = 0; i < mCursor.getCount(); i++)
-					{
-						final int aya = mCursor.getInt(mCursor.getColumnIndexOrThrow("Aya"));
-						final int sura = mCursor.getInt(mCursor.getColumnIndexOrThrow("Sura"));
-
-						try (InputStream in1 = am.open("hafs/" + (page + 1) + "-" + sura + "-" + aya + ".png"))
-						{
-							final Drawable pg1 = Drawable.createFromStream(in1, null);
-							final AppCompatImageView ayaView = new AppCompatImageView(mainActivity);
-							ayaView.setDrawingCacheEnabled(true);
-							ayaView.setOnTouchListener(new View.OnTouchListener()
-							{
-								@Override
-								public boolean onTouch(View v, MotionEvent event)
-								{
-									Log.e("SALAM", "touch " + v);
-
-									final Bitmap bmp = Bitmap.createBitmap(v.getDrawingCache());
-
-									int x1 = (int) event.getX() - 30;
-									int x2 = (int) event.getX() + 30;
-									int y1 = (int) event.getY() - 30;
-									int y2 = (int) event.getY() + 30;
-
-									if (x1 < 0) x1 = 0;
-									if (y1 < 0) y1 = 0;
-									if (x2 >= bmp.getWidth()) x2 = bmp.getWidth() - 1;
-									if (y2 >= bmp.getHeight()) y2 = bmp.getHeight() - 1;
-
-									for (int x = x1; x < x2; x++)
-									{
-										for (int y = y1; y < y2; y++)
-										{
-											final int color = bmp.getPixel(x, y);
-											if (color != Color.TRANSPARENT)
-											{
-												/*
-												float[] invertMX = {
-														-1f, 0f, 0f, 0f, 255f,
-														0f, -1f, 0f, 0f, 255f,
-														0f, 0f, -1f, 0f, 255f,
-														0f, 0f, 0f, 1f, 0f
-												};
-
-												final ColorMatrix colorMatrix = new ColorMatrix(invertMX);
-												final ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
-												((AppCompatImageView) v).setColorFilter(filter);
-
-												((AppCompatImageView) v).setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
-												((AppCompatImageView) v).setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
-												*/
-
-												final int childCount = fl.getChildCount();
-												for (int o = 0; o < childCount; o++)
-												{
-													final View vi = fl.getChildAt(o);
-													if (vi instanceof AppCompatImageView)
-														((AppCompatImageView) vi).clearColorFilter();
-												}
-
-												((AppCompatImageView) v).setColorFilter(new LightingColorFilter(0xffffff, 0x880000));
-												return true;
-											}
-										}
-									}
-									return false;
-
-									/*
-									final Bitmap bmp = Bitmap.createBitmap(v.getDrawingCache());
-									final int pointerCount = event.getPointerCount();
-									for (int i = 0; i < pointerCount; i++)
-									{
-										if (event.getPressure(i) > 0)
-										{
-											Log.e("getPressure ", "" + event.getPressure(i));
-											Log.e("getSize", + event.getX() + "\t   " + event.getSize());
-
-											int color = bmp.getPixel((int) event.getX(i), (int) event.getY(i));
-											if (color != Color.TRANSPARENT)
-											{
-												//click portion without transparent color
-
-												final int childCount = fl.getChildCount();
-												for (int o = 0; o < childCount; o++)
-												{
-													final View vi = fl.getChildAt(o);
-													if(vi instanceof AppCompatImageView)
-														((AppCompatImageView) vi).clearColorFilter();
-												}
-
-												((AppCompatImageView) v).setColorFilter(new LightingColorFilter(0xffffff, 0x880000));
-												return true;
-											}
-										}
-									}
-									return false;
-									*/
-								}
-							});
-							ayaView.setImageDrawable(pg1);
-							fl.addView(ayaView);
-						} catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-
-						mCursor.moveToNext();
-					}
-				}
-				mCursor.close();
-				db.close();
-				mDbHelper.close();
-			}
-			else
-			{
-				in = new FileInputStream((pagesFolder + "/warsh/"+ (page + 1) + ".png"));
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-
-		if(nightMode)
-		{
-			final int childCount = fl.getChildCount();
-			for (int o = 0; o < childCount; o++)
-			{
-				final View vi = fl.getChildAt(o);
-				if (vi instanceof AppCompatImageView)
-				{
-					view.setBackgroundColor(Color.BLACK);
-					//pg.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-					//pg.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-
-					float[] invertMX = {
-							-1f, 0f, 0f, 0f, 255f,
-							0f, -1f, 0f, 0f, 255f,
-							0f, 0f, -1f, 0f, 255f,
-							0f, 0f, 0f, 1f, 0f
-					};
-
-					final ColorMatrix colorMatrix = new ColorMatrix(invertMX);
-					final ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
-					((AppCompatImageView) vi).setColorFilter(filter);
-				}
-			}
-		}
-		else
-			fl.setBackgroundColor(Color.rgb(255, 255, 242)); // "#FFFFF2"
-
-		/*
-		if(page == 2)
-		{
-			final RectF rectBox= new RectF(500, 500, 500, 500);
-			Paint paint= new Paint();
-			paint.setStyle(Paint.Style.FILL);
-			paint.setColor(Color.RED);
-			Canvas canvas;
-			canvas.drawRoundRect(rectBox, 0, 0, paint);
-			canvas.drawBitmap(pg, 0, 0, paint);
-			paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-
-			Drawable clone = pg.getConstantState().newDrawable();
-
-			DrawableCompat.setTint(clone, getResources().getColor(android.R.color.holo_red_dark));
-			//pg.setColorFilter(ContextCompat.getColor(mainContext, R.color.purple_500), PorterDuff.Mode.SRC_IN);
-
-			// Not working
-			//pg.setColorFilter(new PorterDuffColorFilter(Color.argb(150, 120, 255, 255), PorterDuff.Mode.MULTIPLY));
-
-			//clone.setBounds(0, 0, pageView.getWidth(), pageView.getHeight());
-			clone.setBounds(500, 500, 500, 500);
-			pageView.getOverlay().add(clone);
-		}
-		*/
 
 		return view;
 	}
