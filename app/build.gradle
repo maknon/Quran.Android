@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Load keystore.properties
+def keystorePropertiesFile = rootProject.file("app/keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+    namespace 'com.maknoon.quran'
+    compileSdkVersion 37
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+    defaultConfig {
+        applicationId "com.maknoon.quran"
+        minSdkVersion 21
+        targetSdkVersion 37
+        versionCode 12
+        versionName "6.0"
+        vectorDrawables.useSupportLibrary = true
+        resourceConfigurations = ["en-rUS", "ar-rAE"]
+    }
+
+    sourceSets {
+        main {
+            java {
+                exclude '**/PageFragmentNEXT.java'
+                exclude '**/PageFragmentWebview.java'
+            }
+        }
+    }
+
+    androidResources {
+        noCompress += ['.svgz']
+    }
+
+    assetPacks = [":asset_pack_warsh", ":asset_pack_qalon", ":asset_pack_shubah", ":asset_pack_douri"]
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.14.0-alpha10'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'com.google.android.play:asset-delivery:2.3.0'
+    implementation 'io.coil-kt.coil3:coil:3.4.0'
+    implementation 'io.coil-kt.coil3:coil-svg:3.4.0'
+}

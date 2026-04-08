@@ -1,0 +1,9 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+rootProject.name = "Quran"
+include ':app'
+include ':asset_pack_warsh'
+include ':asset_pack_qalon'
+include ':asset_pack_shubah'
+include ':asset_pack_douri'

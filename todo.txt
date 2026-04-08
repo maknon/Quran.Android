@@ -1,0 +1,2 @@
+- replace toast for update the progress of downloading as it takes 2 seconds for every update. 
+the downloeding is finished before that. you need to cancel the toast every time

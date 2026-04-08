@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<item
+		android:id="@+id/menu_hafs"
+		android:title="@string/hafs"
+		android:orderInCategory="97"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_warsh"
+		android:title="@string/menu_warsh"
+		android:orderInCategory="97"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_douri"
+		android:title="@string/menu_douri"
+		android:orderInCategory="98"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_qalon"
+		android:title="@string/menu_qalon"
+		android:orderInCategory="99"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/menu_shubah"
+		android:title="@string/menu_shubah"
+		android:orderInCategory="100"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/darkmode"
+		android:title="@string/darkmode"
+		android:orderInCategory="101"
+		android:icon="@drawable/baseline_dark_mode_24"
+		app:showAsAction="ifRoom" />
+	<item
+		android:id="@+id/sura"
+		android:title="@string/list"
+		android:orderInCategory="103"
+		android:icon="@drawable/baseline_list_24"
+		app:showAsAction="always" />
+
+	<!--
+	<item
+		android:id="@+id/page"
+		android:title="@string/list"
+		android:orderInCategory="102"
+		android:icon="@drawable/saad"
+		app:showAsAction="always" />
+
+	<item
+		android:id="@+id/sura"
+		android:title="@string/list"
+		android:orderInCategory="103"
+		android:icon="@drawable/seen"
+		app:showAsAction="always" />
+
+	<item
+		android:id="@+id/juz"
+		android:title="@string/list"
+		android:orderInCategory="104"
+		android:icon="@drawable/jeem"
+		app:showAsAction="always" />
+		-->
+</menu>
